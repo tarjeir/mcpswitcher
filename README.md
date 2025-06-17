@@ -8,6 +8,9 @@ A simple CLI tool to manage and switch between different MCP (Model Context Prot
 # Install with uv
 uv install .
 
+# Install with pipx (recommended for CLI tools)
+pipx install .
+
 # Or install with pip
 pip install .
 ```
