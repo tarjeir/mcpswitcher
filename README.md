@@ -77,7 +77,8 @@ Your MCP configuration files should be valid JSON files containing MCP server co
 
 ## Target Paths
 
-- **Claude Desktop (macOS/Linux)**: `~/.config/claude-desktop/claude_desktop_config.json`
+- **Claude Desktop (macOS)**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Claude Desktop (Linux)**: `~/.config/claude-desktop/claude_desktop_config.json`
 - **Claude Desktop (Windows)**: `%APPDATA%/Claude/claude_desktop_config.json`
 - **VS Code**: `.vscode/mcp.json` (in current directory)
 - **Cursor**: `~/.cursor/mcp.json`

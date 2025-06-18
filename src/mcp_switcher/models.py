@@ -30,7 +30,9 @@ class AppConfig(BaseModel):
         
         system = platform.system()
         match system:
-            case "Darwin" | "Linux":
+            case "Darwin":
+                return Path.home() / "Library" / "Application Support" / "Claude" / "claude_desktop_config.json"
+            case "Linux":
                 return Path.home() / ".config" / "claude-desktop" / "claude_desktop_config.json"
             case "Windows":
                 import os
