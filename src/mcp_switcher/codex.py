@@ -1,7 +1,7 @@
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Dict, Union
 
 from mcp_switcher import models
 
@@ -90,11 +90,8 @@ def _upsert_codex_config_multi(blocks: Dict[str, str], codex_config: Path) -> Un
         codex_config.parent.mkdir(parents=True, exist_ok=True)
         existing = codex_config.read_text() if codex_config.exists() else ""
 
-        # Remove existing blocks for all these servers first
-        new_text = existing
-        for server_name in blocks.keys():
-            pattern = rf"(?ms)^\[mcp_servers\.{re.escape(server_name)}\][\s\S]*?(?=^\[|\Z)"
-            new_text = re.sub(pattern, "", new_text)
+        # Remove ALL existing [mcp_servers.*] blocks to avoid stale entries
+        new_text = re.sub(r"(?ms)^\[mcp_servers\.[^\]]+\][\s\S]*?(?=^\[|\Z)", "", existing)
 
         # Ensure neat separation
         if new_text and not new_text.endswith("\n\n"):

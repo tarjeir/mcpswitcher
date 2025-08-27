@@ -1,10 +1,7 @@
-import re
 import json
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
-
-import pytest
 
 from mcp_switcher import models
 from mcp_switcher.codex import update_codex_from_active
@@ -79,6 +76,32 @@ class TestCodexSingleServer:
                 assert "[mcp_servers.myMCP]" in out
                 assert 'command = "npx"' in out
                 assert 'command = "old"' not in out
+
+    def test_removes_stale_server_blocks(self):
+        # Seed existing TOML with a different server that should be removed
+        codex_file = self.codex_home / ".codex" / "config.toml"
+        codex_file.parent.mkdir(parents=True, exist_ok=True)
+        codex_file.write_text(
+            "projects = { \"/x\" = { trust_level = \"trusted\" } }\n"
+            "[mcp_servers.old]\n"
+            "command = \"will_be_removed\"\n"
+        )
+
+        # Active now only has myMCP
+        servers = {"myMCP": {"command": "npx"}}
+        write_active(self.active, servers)
+
+        app_config = self.make_app_config()
+        with patch.object(type(app_config), "get_target_path", return_value=self.active):
+            with patch("pathlib.Path.home", return_value=self.codex_home):
+                result = update_codex_from_active(app_config)
+                assert result is True
+                out = codex_file.read_text()
+                # Unrelated key preserved
+                assert out.startswith("projects = ")
+                # Stale block removed and replaced with current only
+                assert "[mcp_servers.old]" not in out
+                assert "[mcp_servers.myMCP]" in out
 
 
 class TestCodexMultiServer:
