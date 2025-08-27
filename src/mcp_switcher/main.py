@@ -8,6 +8,7 @@ from rich.table import Table
 from mcp_switcher import models
 from mcp_switcher.config import get_config_files, load_config, save_config
 from mcp_switcher.switcher import get_current_config, switch_config
+from mcp_switcher.codex import update_codex_from_active
 
 app = typer.Typer(help="Simple MCP configuration switcher CLI tool")
 console = Console()
@@ -141,7 +142,7 @@ def current():
 def config(
     dir: Annotated[Optional[Path], typer.Option("--dir", help="Set the configurations directory")] = None,
     show: Annotated[bool, typer.Option("--show", help="Show current configuration settings")] = False,
-    client: Annotated[Optional[str], typer.Option("--client", help="Set the target MCP client (claude-desktop, vscode, cursor)")] = None
+    client: Annotated[Optional[str], typer.Option("--client", help="Set the target MCP client or update Codex (claude-desktop, vscode, cursor, codex)")] = None
 ):
     """Configure the MCP switcher settings."""
     if show:
@@ -205,11 +206,35 @@ def config(
         console.print(f"[green]✓ Configs directory set to: {dir}[/green]")
     
     if client:
+        # Special minimal-scope behavior for Codex: perform write/update now
+        if client == "codex":
+            existing_config = load_config()
+            match existing_config:
+                case models.ConfigError(message=msg):
+                    console.print(f"[red]Error: {msg}[/red]")
+                    console.print("Set configs directory first with --dir")
+                    raise typer.Exit(1)
+                case models.AppConfig() as app_config:
+                    pass
+                case _ as unreachable:
+                    assert False, f"Unexpected existing config result: {unreachable}"
+
+            codex_result = update_codex_from_active(app_config)
+            match codex_result:
+                case models.SwitchError(message=msg):
+                    console.print(f"[red]{msg}[/red]")
+                    raise typer.Exit(1)
+                case bool():
+                    console.print("[green]✓ Updated ~/.codex/config.toml with active MCP server[/green]")
+                    return
+                case _ as unreachable:
+                    assert False, f"Unexpected Codex update result: {unreachable}"
+
         try:
             mcp_client = models.MCPClient(client)
         except ValueError:
             console.print(f"[red]Invalid client: {client}[/red]")
-            console.print("Valid clients: claude-desktop, vscode, cursor")
+            console.print("Valid clients: claude-desktop, vscode, cursor, codex")
             raise typer.Exit(1)
         
         existing_config = load_config()

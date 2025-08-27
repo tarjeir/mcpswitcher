@@ -1,7 +1,7 @@
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -139,7 +139,7 @@ class TestSwitchConfig:
         import shutil
         shutil.rmtree(self.temp_dir)
     
-    def create_valid_config(self, path: Path, content: dict = None):
+    def create_valid_config(self, path: Path, content: dict | None = None):
         """Helper to create a valid config file."""
         if content is None:
             content = {"mcpServers": {"test": {"command": "test"}}}

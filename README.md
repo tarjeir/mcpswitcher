@@ -31,6 +31,9 @@ mcp-switch current
 
 # Configure the tool settings
 mcp-switch config --show
+
+# Update Codex CLI with servers from the active config
+mcp-switch config --client codex
 ```
 
 ### Configuration
@@ -43,6 +46,9 @@ mcp-switch config --dir /path/to/your/mcp-configs
 
 # Set target MCP client (claude-desktop, vscode, cursor)
 mcp-switch config --client claude-desktop
+
+# Sync Codex CLI now with the currently active config
+mcp-switch config --client codex
 ```
 
 ### Supported Clients
@@ -50,6 +56,7 @@ mcp-switch config --client claude-desktop
 - `claude-desktop` - Claude Desktop application (default)
 - `vscode` - VS Code with MCP extension
 - `cursor` - Cursor editor
+- `codex` - Codex CLI (updates `~/.codex/config.toml` from the active config)
 
 ## How It Works
 
@@ -59,6 +66,7 @@ mcp-switch config --client claude-desktop
 4. Use `mcp-switch use <config-name>` to activate a configuration
 5. The tool copies the selected configuration to the appropriate location for your MCP client
 6. Automatically creates backups of existing configurations before switching
+7. For Codex, it reads the active MCP JSON and upserts TOML blocks under `[mcp_servers.<name>]` in `~/.codex/config.toml`, preserving unrelated keys and removing stale server blocks
 
 ## Configuration File Structure
 
@@ -77,11 +85,11 @@ Your MCP configuration files should be valid JSON files containing MCP server co
 
 ## Target Paths
 
-- **Claude Desktop (macOS)**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Claude Desktop (Linux)**: `~/.config/claude-desktop/claude_desktop_config.json`
+- **Claude Desktop (macOS/Linux)**: `~/.config/claude-desktop/claude_desktop_config.json`
 - **Claude Desktop (Windows)**: `%APPDATA%/Claude/claude_desktop_config.json`
 - **VS Code**: `.vscode/mcp.json` (in current directory)
 - **Cursor**: `~/.cursor/mcp.json`
+- **Codex**: `~/.codex/config.toml` (upserted with `[mcp_servers.*]`)
 
 ## Features
 
@@ -92,6 +100,7 @@ Your MCP configuration files should be valid JSON files containing MCP server co
 - ✅ Backup creation before switching
 - ✅ Rich console output with colors
 - ✅ Cross-platform support
+- ✅ Codex sync: upserts `[mcp_servers.*]` from the active config
 
 ## Requirements
 
